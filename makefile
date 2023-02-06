@@ -1,14 +1,17 @@
 CC = gcc
-CFLAGS = -g
+CFLAGS = -g -c -I$(HEADERS)
+OFLAGS = -g -o
+SOURCE = source/
+HEADERS = headers/
 
 default: program
 
 program: main.o inputHandler.o
-	$(CC) $(CFLAGS) -o program main.o inputHandler.o
-main.o: main.c inputHandler.h
-	$(CC) $(CFLAGS) -c main.c
-inputHandler.o: inputHandler.c inputHandler.h
-	$(CC) $(CFLAGS) -c inputHandler.c
+	$(CC) $(OFLAGS) program main.o inputHandler.o
+main.o: $(SOURCE)main.c $(HEADERS)inputHandler.h
+	$(CC) $(CFLAGS) $(SOURCE)main.c
+inputHandler.o: $(SOURCE)inputHandler.c $(HEADERS)inputHandler.h
+	$(CC) $(CFLAGS) $(SOURCE)inputHandler.c
 clean:
 	$(RM) program *.o
 run:
