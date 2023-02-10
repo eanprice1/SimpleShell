@@ -8,10 +8,11 @@ default: program
 
 program: main.o inputHandler.o
 	$(CC) $(OFLAGS) program main.o inputHandler.o
-main.o: $(SOURCE)main.c $(HEADERS)inputHandler.h
+main.o: $(SOURCE)main.c $(HEADERS)inputHandler.h $(HEADERS)commandIndex.h
 	$(CC) $(CFLAGS) $(SOURCE)main.c
-inputHandler.o: $(SOURCE)inputHandler.c $(HEADERS)inputHandler.h
+inputHandler.o: $(SOURCE)inputHandler.c $(HEADERS)inputHandler.h $(HEADERS)commandIndex.h
 	$(CC) $(CFLAGS) $(SOURCE)inputHandler.c
+
 clean:
 	$(RM) program *.o
 run:
