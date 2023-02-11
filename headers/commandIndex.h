@@ -12,7 +12,10 @@ typedef struct commandIndex {
     int argBegin;
     int argEnd;
     int backgroundIndex;
+    int pipeCount;
     pipe* pipe;
 }commandIndex;
+
+void fillCommandIndex(commandIndex* cmdIndex, int pipeSize);
 
 #endif

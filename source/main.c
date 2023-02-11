@@ -25,11 +25,18 @@ int main(void) {
             break;
         }
         
-        commandIndex cmdIndex = {0, 0, 0, 0, 0, 0, 0, 0, 0, (pipe*) malloc(10 * sizeof(pipe))};
-        validateInput(numChars, input, &cmdIndex);
+        // initialize cmdIndex and fill with default values
+        commandIndex cmdIndex;
+        fillCommandIndex(&cmdIndex, 10);
+        
+        int isValid = validateInput(numChars, input, &cmdIndex);
+        if(isValid) {
+            printf("\nValid");
+        } else {
+            printf("\nNot Valid");
+        }
 
         free(cmdIndex.pipe);
-        free(&cmdIndex);
     }
     free(input);
     printf("\nExited Shell.");

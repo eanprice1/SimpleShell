@@ -6,4 +6,6 @@ typedef struct pipe {
     int end;
 }pipe;
 
+void fillPipe(pipe* pipe);
+
 #endif

@@ -5,7 +5,6 @@
 int isExitRequested(char* inputString);
 int isEmptyCommand(char* inputString);
 int validateInput(int numChars, char* inputString, commandIndex* cmdIndex);
-int skipWhitespace(int curIndex, int numChars, char* inputString);
-int iterateToStringEnd(int curIndex, char* inputString);
+int iterateWhiteSpace(int curIndex, char* inputString);
 
 #endif

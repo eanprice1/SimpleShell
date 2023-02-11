@@ -39,9 +39,8 @@ int isEmptyCommand(char* inputString) {
 int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
     int curIndex = 0;
 
-    while(inputString[curIndex] == ' '){
-        curIndex++;
-    }
+    curIndex = iterateWhiteSpace(curIndex, inputString);
+
     //found first character
     switch(inputString[curIndex]) {
         case '<':
@@ -58,37 +57,39 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
             break;
     }
 
-    while(inputString[curIndex] != ' ') {
+    while(inputString[curIndex] != ' ' && curIndex < numChars) {
         curIndex++;
     }
     //found last character of cmd
     cmdIndex->cmdEnd = curIndex - 1;
+    if(curIndex == numChars){
+        return 1;
+    }
 
     //search for args
     while(curIndex < numChars) {
-        while(inputString[curIndex] == ' ') {
-            curIndex++;
-        }
+        curIndex = iterateWhiteSpace(curIndex, inputString);
 
         char curChar = inputString[curIndex];
         if(curChar == '<'){
             if(cmdIndex->inRedirectBegin == 0 && cmdIndex->pipe[0].begin == 0 &&
             cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->inRedirectBegin = curIndex;
-                //find end index
+                break;
             } else {
                 return 0;
             }
         } else if(curChar == '|') {
             if(cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->pipe[0].begin = curIndex;
-                //find end for index 
+                break;
             } else {
                 return 0;
             }
         } else if(curChar == '>') {
             if(cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->outRedirectBegin = curIndex;
+                break;
             } else {
                 return 0;
             }
@@ -100,6 +101,8 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
             } else {
                 return 0;
             }
+        } else if(curChar == '\n') {
+            return 1;
         } else {
             if(cmdIndex->inRedirectBegin == 0 && cmdIndex->pipe[0].begin == 0 && 
             cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
@@ -108,17 +111,29 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
                 }
                 curIndex++;
                 //find end index
-                while(inputString[curIndex] != ' ') {
+                while(inputString[curIndex] != ' ' && inputString[curIndex] != '<' &&
+                inputString[curIndex] != '|' && inputString[curIndex] != '>' &&
+                inputString[curIndex] != '&' && curIndex < numChars) {
                     curIndex++;
                 }
                 cmdIndex->argEnd = curIndex - 1;
+                if(curIndex == numChars) {
+                    return 1;
+                }
             } else {
                 return 0;
             }
         }
     }
 
+    return 1;
+}
 
+int iterateWhiteSpace(int curIndex, char* inputString) {
+    while(inputString[curIndex] == ' '){
+        curIndex++;
+    }
+    return curIndex;
 }
 
 int findNextString(int curIndex, char* inputString) {
@@ -127,14 +142,6 @@ int findNextString(int curIndex, char* inputString) {
 
 
 
-int skipWhitespace(int curIndex, int numChars, char* inputString) {
-    printf("\n%d", numChars);
-    while(inputString[curIndex] == ' ') {
-        printf("\n%c", inputString[curIndex]);
-        curIndex++;
-    }
-    return curIndex;
-}
 
 int iterateToStringEnd(int curIndex, char* inputString) {
     while(inputString[curIndex] != ' ') {
