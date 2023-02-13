@@ -13,6 +13,7 @@ void fillCommandIndex(commandIndex* cmdIndex, int pipeSize) {
     cmdIndex->argEnd = 0;
     cmdIndex->backgroundIndex = 0;
     cmdIndex->pipeCount = 0;
+    cmdIndex->pipeSize = pipeSize;
     cmdIndex->pipe = (pipe*) malloc(pipeSize * sizeof(pipe));
     for(int i = 0; i < pipeSize; i++) {
         fillPipe(&cmdIndex->pipe[i]);

@@ -66,7 +66,7 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
         return 1;
     }
 
-    //search for args
+    //search for all command arguments
     while(curIndex < numChars) {
         curIndex = iterateWhiteSpace(curIndex, inputString);
 
@@ -75,6 +75,7 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
             if(cmdIndex->inRedirectBegin == 0 && cmdIndex->pipe[0].begin == 0 &&
             cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->inRedirectBegin = curIndex;
+                curIndex++;
                 break;
             } else {
                 return 0;
@@ -82,6 +83,8 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
         } else if(curChar == '|') {
             if(cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->pipe[0].begin = curIndex;
+                cmdIndex->pipeCount = 1;
+                curIndex++;
                 break;
             } else {
                 return 0;
@@ -89,18 +92,14 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
         } else if(curChar == '>') {
             if(cmdIndex->outRedirectBegin == 0 && cmdIndex->backgroundIndex == 0) {
                 cmdIndex->outRedirectBegin = curIndex;
+                curIndex++;
                 break;
             } else {
                 return 0;
             }
         } else if(curChar == '&') {
-            //check for extra characters
-            if("no extra characters") {
-                cmdIndex->backgroundIndex = curIndex;
-                return 1;
-            } else {
-                return 0;
-            }
+            cmdIndex->backgroundIndex = curIndex;
+            return 1;
         } else if(curChar == '\n') {
             return 1;
         } else {
@@ -123,6 +122,104 @@ int validateInput(int numChars, char* inputString, commandIndex* cmdIndex) {
             } else {
                 return 0;
             }
+        }
+    }
+
+    //This logic is only reached if one of the following 
+    //characters has been encountered: <, |, or >.
+    //Begin processing other parameters
+    while(curIndex < numChars) {
+        curIndex = iterateWhiteSpace(curIndex, inputString);
+
+        if(cmdIndex->inRedirectBegin != 0 && cmdIndex->inRedirectEnd == 0) {
+            //iterate to end of string and assign end
+            while(inputString[curIndex] != ' ' && inputString[curIndex] != '<' &&
+                inputString[curIndex] != '|' && inputString[curIndex] != '>' &&
+                inputString[curIndex] != '&' && curIndex != (numChars - 1)) {
+                    curIndex++;
+            }
+
+            cmdIndex->inRedirectEnd = curIndex - 1;
+            if(inputString[curIndex] == ' ') {
+                curIndex = iterateWhiteSpace(curIndex, inputString);
+            }
+
+            if(inputString[curIndex] == '<'){
+                return 0;
+            } else if(inputString[curIndex] == '>') {
+                cmdIndex->outRedirectBegin = curIndex;
+            } else if(inputString[curIndex] == '|') {
+                cmdIndex->pipe[0].begin = curIndex;
+                cmdIndex->pipeCount = 1;
+            } else if(inputString[curIndex] == '&') {
+                cmdIndex->backgroundIndex = curIndex;
+                return 1;
+            } else if(curIndex == numChars) {
+                return 1;
+            }
+            
+            curIndex++;
+        } else if(cmdIndex->outRedirectBegin != 0 && cmdIndex->outRedirectEnd == 0) {
+            //iterate to end of string and assign end
+            while(inputString[curIndex] != ' ' && inputString[curIndex] != '<' &&
+                inputString[curIndex] != '|' && inputString[curIndex] != '>' &&
+                inputString[curIndex] != '&' && curIndex != (numChars - 1)) {
+                    curIndex++;
+            }
+
+            cmdIndex->outRedirectEnd = curIndex - 1;
+            if(inputString[curIndex] == ' ') {
+                curIndex = iterateWhiteSpace(curIndex, inputString);
+            }
+
+            if(inputString[curIndex] == '<'){
+                return 0;
+            } else if(inputString[curIndex] == '>') {
+                return 0;
+            } else if(inputString[curIndex] == '|') {
+                return 0;
+            } else if(inputString[curIndex] == '&') {
+                cmdIndex->backgroundIndex = curIndex;
+                return 1;
+            } else if(curIndex == numChars) {
+                return 1;
+            }
+
+            curIndex++;
+        } else if(cmdIndex->pipeCount != 0 && cmdIndex->pipe[cmdIndex->pipeCount - 1].end == 0) {
+            //iterate to end of string and assign end
+            while(inputString[curIndex] != ' ' && inputString[curIndex] != '<' &&
+                inputString[curIndex] != '|' && inputString[curIndex] != '>' &&
+                inputString[curIndex] != '&' && curIndex != (numChars - 1)) {
+                    curIndex++;
+            }
+
+            //todo: identify cmd and its arguments
+
+            cmdIndex->pipe[cmdIndex->pipeCount - 1].end = curIndex - 1;
+            if(inputString[curIndex] == ' ') {
+                curIndex = iterateWhiteSpace(curIndex, inputString);
+            }
+
+            if(inputString[curIndex] == '<'){
+                return 0;
+            } else if(inputString[curIndex] == '>') {
+                cmdIndex->outRedirectBegin = curIndex;
+            } else if(inputString[curIndex] == '|') {
+                if(cmdIndex->pipeCount < cmdIndex->pipeSize) {
+                    cmdIndex->pipe[cmdIndex->pipeCount].begin = curIndex;
+                    cmdIndex->pipeCount++;
+                } else {
+                    return 0;
+                }    
+            } else if(inputString[curIndex] == '&') {
+                cmdIndex->backgroundIndex = curIndex;
+                return 1;
+            } else if(curIndex == numChars) {
+                return 1;
+            }
+
+            curIndex++;
         }
     }
 

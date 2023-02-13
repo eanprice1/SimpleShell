@@ -13,6 +13,7 @@ typedef struct commandIndex {
     int argEnd;
     int backgroundIndex;
     int pipeCount;
+    int pipeSize;
     pipe* pipe;
 }commandIndex;
 
